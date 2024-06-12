@@ -22,6 +22,7 @@
 			</div>
             <br>
 		    <button type="submit" class="btn btn-primary">Login</button>
+				<a href="app/views/signup/index.php" class="btn btn-secondary"> Sign Up </a>
 		</fieldset>
 		</form> 
 	</div>
