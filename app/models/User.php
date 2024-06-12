@@ -59,4 +59,12 @@ class User {
       die;
   }
 
+  public function logAttempts($username, $status){
+    $db = db_connect();
+    $statement = $db->prepare("INSERT INTO login_attempts(username,attempt_status,attempt_time) VALUES (:username, :status, NOW())");
+    $statement->bindParam(':username', $username);
+    $statement->bindParam(':status', $status);
+    $statement->execute();
+      
+  }
 }
