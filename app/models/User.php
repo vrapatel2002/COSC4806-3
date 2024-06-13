@@ -2,50 +2,52 @@
 
 class User {
 
-    public $username;
-    public $password;
-    public $auth = false;
+  public $username;
+  public $password;
+  public $auth = false;
 
-    public function __construct() {
+  public function __construct() {
         
-    }
+  }
 
-    public function test () {
-      $db = db_connect();
-      $statement = $db->prepare("select * from users;");
-      $statement->execute();
-      $rows = $statement->fetch(PDO::FETCH_ASSOC);
-      return $rows;
-    }
+  public function test () {
+    $db = db_connect();
+    $statement = $db->prepare("select * from users;");
+    $statement->execute();
+    $rows = $statement->fetch(PDO::FETCH_ASSOC);
+    return $rows;
+  }
 
-    public function authenticate($username, $password) {
-        /*
-         * if username and password good then
-         * $this->auth = true;
-         */
-  		$username = strtolower($username);
-  		$db = db_connect();
-          $statement = $db->prepare("select * from users WHERE username = :name;");
-          $statement->bindValue(':name', $username);
-          $statement->execute();
-          $rows = $statement->fetch(PDO::FETCH_ASSOC);
+  public function authenticate($username, $password) {
+    /*
+    * if username and password good then
+    * $this->auth = true;
+    */
+    $username = strtolower($username);
+  	$db = db_connect();
+    $statement = $db->prepare("select * from users WHERE username = :name;");
+    $statement->bindValue(':name', $username);
+    $statement->execute();
+    $rows = $statement->fetch(PDO::FETCH_ASSOC);
   		
-  		if (password_verify($password, $rows['password'])) {
-  			$_SESSION['auth'] = 1;
-  			$_SESSION['username'] = ucwords($username);
-  			unset($_SESSION['failedAuth']);
-  			header('Location: /home');
-  			die;
+  	if (password_verify($password, $rows['password'])) {
+  		$_SESSION['auth'] = 1;
+  		$_SESSION['username'] = ucwords($username);
+  		unset($_SESSION['failedAuth']);
+      $this->logAttempts($username, 'good');
+  		header('Location: /home');
+  		die;
+  	} else {
+  	  if(isset($_SESSION['failedAuth'])) {
+  	  $_SESSION['failedAuth'] ++;
   		} else {
-  			if(isset($_SESSION['failedAuth'])) {
-  				$_SESSION['failedAuth'] ++; //increment
-  			} else {
-  				$_SESSION['failedAuth'] = 1;
-  			}
-  			header('Location: /login');
-  			die;
+  			$_SESSION['failedAuth'] = 1;
   		}
-    }
+      $this->logAttempts($username, 'bad');
+  		header('Location: /login');
+  		die;
+  	}
+  }
 
   public function creat_user($username, $password){
       $db = db_connect();
@@ -59,7 +61,7 @@ class User {
       die;
   }
 
-  public function logAttempts($username, $status){
+  private function logAttempts($username, $status){
     $db = db_connect();
     $statement = $db->prepare("INSERT INTO login_attempts(username,attempt_status,attempt_time) VALUES (:username, :status, NOW())");
     $statement->bindParam(':username', $username);
@@ -67,4 +69,6 @@ class User {
     $statement->execute();
       
   }
+
+  
 }
