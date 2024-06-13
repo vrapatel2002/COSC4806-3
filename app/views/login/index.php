@@ -10,6 +10,14 @@
 
 <div class="row">
     <div class="col-sm-auto">
+		<?php
+		session_start();
+		if (isset($_SESSION['lockout_message'])) {
+				echo '<div class="alert alert-danger" role="alert">' . $_SESSION['lockout_message'] . '</div>';
+				unset($_SESSION['lockout_message']); // Clear the message after displaying it
+		}
+		?>
+	
 		<form action="/login/verify" method="post" >
 		<fieldset>
 			<div class="form-group">
@@ -22,9 +30,9 @@
 			</div>
             <br>
 		    <button type="submit" class="btn btn-primary">Login</button>
-				<a href="app/views/signup/index.php" class="btn btn-secondary"> Sign Up </a>
+			<a href="app/views/signup/index.php" class="btn btn-primary"> Sign Up </a>
 		</fieldset>
 		</form> 
 	</div>
 </div>
-    <?php require_once 'app/views/templates/footer.php' ?>
+<?php require_once 'app/views/templates/footer.php' ?>

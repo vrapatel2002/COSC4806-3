@@ -25,6 +25,22 @@ class User {
     */
     $username = strtolower($username);
   	$db = db_connect();
+
+    if (isset($_SESSION['failedAuth']) && $_SESSION['failedAuth'] >= 3) {
+      $lockoutTime = 60; // 60 seconds lockout
+      $lastFailedTime = $_SESSION['lastFailedAuthTime'];
+      $currentTime = time();
+
+      if (($currentTime - $lastFailedTime) < $lockoutTime) {
+        $_SESSION['lockout_message'] = "You are locked out for " . ($lockoutTime - ($currentTime - $lastFailedTime)) . " seconds.";
+        header('Location: /login');
+        die;
+      } else {
+        $_SESSION['failedAuth'] = 0;
+        unset($_SESSION['lockout_message']);
+      }
+    }
+    
     $statement = $db->prepare("select * from users WHERE username = :name;");
     $statement->bindValue(':name', $username);
     $statement->execute();
@@ -39,13 +55,14 @@ class User {
   		die;
   	} else {
   	  if(isset($_SESSION['failedAuth'])) {
-  	  $_SESSION['failedAuth'] ++;
+  	    $_SESSION['failedAuth'] ++;
   		} else {
   			$_SESSION['failedAuth'] = 1;
   		}
+      $_SESSION['lastFailedAuthTime'] = time();
       $this->logAttempts($username, 'bad');
-  		header('Location: /login');
-  		die;
+      header('Location: /login');
+      die;
   	}
   }
 
